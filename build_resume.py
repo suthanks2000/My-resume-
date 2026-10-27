@@ -5,11 +5,11 @@ Both writers follow the same fixed template from resume_spec.md:
 A4, single column, 0.6 in margins, Arial, name 18 pt bold, title line 10.5 pt bold
 navy, section headings 11 pt bold CAPS with a thin rule, body 10 pt.
 
-LibreOffice is not installed on this box (Amazon Linux 2023, arm64), so the PDF is
+LibreOffice is not installed on this box, so the PDF is
 rendered directly instead of converted from the .docx.
 
 Usage:
-    python3.13 build_resume.py <outdir> [role ...]
+    python build_resume.py <outdir> [role ...]
 """
 import glob
 import os
@@ -53,6 +53,7 @@ def out_name(suffix, ext):
 # ------------------------------------------------------------------- the .docx
 from docx import Document  # noqa: E402
 from docx.enum.text import WD_ALIGN_PARAGRAPH  # noqa: E402
+from docx.opc.constants import RELATIONSHIP_TYPE as RT  # noqa: E402
 from docx.oxml.ns import qn  # noqa: E402
 from docx.oxml import OxmlElement  # noqa: E402
 from docx.shared import Mm, Pt, Inches, RGBColor  # noqa: E402
@@ -110,6 +111,15 @@ def _para(doc, *, size=BODY_SIZE, bold=False, color=None, align=None,
     return p
 
 
+def _force_font(rPr):
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = OxmlElement("w:rFonts")
+        rPr.insert(0, rFonts)
+    for attr in ("w:ascii", "w:hAnsi", "w:cs", "w:eastAsia"):
+        rFonts.set(qn(attr), "Arial")
+
+
 def _run(p, text, *, size=BODY_SIZE, bold=False, color=None):
     r = p.add_run(text)
     r.font.name = "Arial"
@@ -117,15 +127,37 @@ def _run(p, text, *, size=BODY_SIZE, bold=False, color=None):
     r.font.bold = bold
     if color:
         r.font.color.rgb = RGBColor.from_string(color)
-    # Make the font stick for every script range, not just Latin.
-    rPr = r._element.get_or_add_rPr()
-    rFonts = rPr.find(qn("w:rFonts"))
-    if rFonts is None:
-        rFonts = OxmlElement("w:rFonts")
-        rPr.insert(0, rFonts)
-    for attr in ("w:ascii", "w:hAnsi", "w:cs", "w:eastAsia"):
-        rFonts.set(qn(attr), "Arial")
+    _force_font(r._element.get_or_add_rPr())
     return r
+
+
+def _link(p, text, url, *, size=BODY_SIZE, color=NAVY_HEX, underline=False):
+    """A real external hyperlink relationship in docx, clickable with proper URL."""
+    r_id = p.part.relate_to(url, RT.HYPERLINK, is_external=True)
+    hl = OxmlElement("w:hyperlink")
+    hl.set(qn("r:id"), r_id)
+    run = OxmlElement("w:r")
+    rPr = OxmlElement("w:rPr")
+    _force_font(rPr)
+    szv = OxmlElement("w:sz")
+    szv.set(qn("w:val"), str(int(round(size * 2))))
+    rPr.append(szv)
+    if color:
+        col = OxmlElement("w:color")
+        col.set(qn("w:val"), color)
+        rPr.append(col)
+    if underline:
+        u = OxmlElement("w:u")
+        u.set(qn("w:val"), "single")
+        rPr.append(u)
+    run.append(rPr)
+    t = OxmlElement("w:t")
+    t.text = text
+    t.set(qn("xml:space"), "preserve")
+    run.append(t)
+    hl.append(run)
+    p._p.append(hl)
+    return hl
 
 
 def _section_heading(doc, text):
@@ -169,9 +201,18 @@ def build_docx(path, title_line, summary, skill_order):
     _run(p, D.NAME, size=18, bold=True)
     p = _para(doc, align=WD_ALIGN_PARAGRAPH.CENTER, after=1.5)
     _run(p, title_line, size=10.5, bold=True, color=NAVY_HEX)
-    for line in D.CONTACT_LINES:
-        _para(doc, align=WD_ALIGN_PARAGRAPH.CENTER, after=0.5)
-        _run(doc.paragraphs[-1], line)
+
+    # Contact Line 1: Location | Phone | Email (hyperlink)
+    p = _para(doc, align=WD_ALIGN_PARAGRAPH.CENTER, after=0.5)
+    _run(p, f"{D.LOCATION} | {D.PHONE} | ")
+    _link(p, D.EMAIL, D.EMAIL_URL, color=NAVY_HEX)
+
+    # Contact Line 2: Portfolio | GitHub | LinkedIn (hyperlinks)
+    p = _para(doc, align=WD_ALIGN_PARAGRAPH.CENTER, after=0.5)
+    for i, (label, url) in enumerate(D.LINKS):
+        if i > 0:
+            _run(p, " | ")
+        _link(p, label, url, color=NAVY_HEX)
 
     # Summary
     _section_heading(doc, "Summary")
@@ -224,7 +265,6 @@ def build_docx(path, title_line, summary, skill_order):
     cp.category = ""
     cp.keywords = ""
     cp.revision = 1
-    # python-docx's blank template carries a 2013 timestamp; make it today's.
     now = datetime.now().replace(microsecond=0)
     cp.created = now
     cp.modified = now
@@ -241,23 +281,28 @@ from reportlab.lib.styles import ParagraphStyle  # noqa: E402
 from reportlab.pdfbase import pdfmetrics  # noqa: E402
 from reportlab.pdfbase.ttfonts import TTFont  # noqa: E402
 from reportlab.platypus import (BaseDocTemplate, Frame, HRFlowable,  # noqa: E402
-                                PageTemplate, Paragraph, Spacer)
+                                PageTemplate, Paragraph)
 
 NAVY = Color(*NAVY_RGB)
 FONT, FONT_B = "Arial", "Arial-Bold"
 
 
 def register_fonts():
-    """Arial is not installed; Liberation Sans is metric-compatible with it."""
+    """Register Arial / Liberation Sans fonts across Windows and Linux."""
     pairs = [(FONT, ["LiberationSans-Regular.ttf", "Arial.ttf", "arial.ttf"]),
              (FONT_B, ["LiberationSans-Bold.ttf", "Arial_Bold.ttf", "arialbd.ttf"])]
-    roots = ["/usr/share/fonts", "/usr/local/share/fonts",
-             os.path.expanduser("~/.fonts"), os.path.expanduser("~/.local/share/fonts")]
+    windir = os.environ.get("WINDIR", "C:\\Windows")
+    roots = [
+        os.path.join(windir, "Fonts"),
+        "/usr/share/fonts", "/usr/local/share/fonts",
+        os.path.expanduser("~/.fonts"), os.path.expanduser("~/.local/share/fonts")
+    ]
     for name, candidates in pairs:
         for cand in candidates:
             hits = []
             for root in roots:
-                hits += glob.glob(os.path.join(root, "**", cand), recursive=True)
+                if os.path.isdir(root):
+                    hits += glob.glob(os.path.join(root, "**", cand), recursive=True)
             if hits:
                 pdfmetrics.registerFont(TTFont(name, hits[0]))
                 break
@@ -265,7 +310,6 @@ def register_fonts():
             raise SystemExit(f"no font file found for {name}")
     pdfmetrics.registerFontFamily(FONT, normal=FONT, bold=FONT_B,
                                   italic=FONT, boldItalic=FONT_B)
-    # Stop ReportLab falling back to (non-embedded) Helvetica anywhere.
     rl_config.canvas_basefontname = FONT
 
 
@@ -302,6 +346,12 @@ def build_pdf(path, title_line, summary, skill_order):
     s = _styles()
     story = []
 
+    def esc(txt):
+        return str(txt).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    def link_html(label, url):
+        return f'<link href="{url}" color="#{NAVY_HEX}">{esc(label)}</link>'
+
     def heading(text):
         story.append(Paragraph(text.upper(), s["section"]))
         story.append(HRFlowable(width="100%", thickness=0.75, color=NAVY,
@@ -311,10 +361,16 @@ def build_pdf(path, title_line, summary, skill_order):
         st = ParagraphStyle("b", parent=s["bullet"], spaceAfter=after)
         story.append(Paragraph(text, st, bulletText="•"))
 
-    story.append(Paragraph(D.NAME, s["name"]))
+    story.append(Paragraph(esc(D.NAME), s["name"]))
     story.append(Paragraph(title_line, s["title"]))
-    for line in D.CONTACT_LINES:
-        story.append(Paragraph(line, s["contact"]))
+
+    # Contact line 1: Location | Phone | Email (link)
+    line1_html = f"{esc(D.LOCATION)} | {esc(D.PHONE)} | {link_html(D.EMAIL, D.EMAIL_URL)}"
+    story.append(Paragraph(line1_html, s["contact"]))
+
+    # Contact line 2: suthan.vercel.app | github.com/suthanks2000 | linkedin.com/in/suthan-k (links)
+    line2_html = " | ".join(link_html(label, url) for label, url in D.LINKS)
+    story.append(Paragraph(line2_html, s["contact"]))
 
     heading("Summary")
     story.append(Paragraph(summary, ParagraphStyle(
@@ -375,7 +431,7 @@ def main(argv):
         dx = build_docx(os.path.join(outdir, out_name(suffix, "docx")),
                         title_line, summary, skill_order)
         pf = build_pdf(os.path.join(outdir, out_name(suffix, "pdf")),
-                       title_line, summary, skill_order)
+                        title_line, summary, skill_order)
         print(f"{key:16s} {os.path.basename(dx):32s} {os.path.basename(pf)}")
 
 

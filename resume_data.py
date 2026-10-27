@@ -7,19 +7,30 @@ companies, dates or achievements that are not in the spec.
 
 NAME = "SUTHAN K"
 
-CONTACT_LINES = [
-    "Trivandrum, Kerala, India | +91 93843 40144 | suthanks2000@gmail.com",
-    "suthan.vercel.app | github.com/suthanks2000 | linkedin.com/in/suthan-k",
+LOCATION = "Trivandrum, Kerala, India"
+PHONE = "+91 93843 40144"
+EMAIL = "suthanks2000@gmail.com"
+EMAIL_URL = "mailto:" + EMAIL
+
+LINKS = [
+    ("suthan.vercel.app", "https://suthan.vercel.app"),
+    ("github.com/suthanks2000", "https://github.com/suthanks2000"),
+    ("linkedin.com/in/suthan-k", "https://www.linkedin.com/in/suthan-k/"),
 ]
 
-# --- Skills: one entry per line, keyed by label (content LOCKED) -------------
+CONTACT_LINES = [
+    f"{LOCATION} | {PHONE} | {EMAIL}",
+    " | ".join(label for label, _ in LINKS),
+]
+
+# --- Skills: one entry per line, keyed by label (content LOCKED, 46 items) ---
 SKILL_LINES = {
     "Languages": "JavaScript (ES6+), TypeScript, Python, SQL",
     "Frontend": "React.js, Next.js, Redux Toolkit, HTML5, CSS3, Tailwind CSS",
-    "Backend & APIs": "Node.js, Express.js, FastAPI, Flask, REST APIs, GraphQL, WebSockets, Microservices",
-    "Databases": "PostgreSQL, MySQL, MongoDB, TypeORM",
-    "Cloud & DevOps": "AWS Lambda, Docker, GitHub Actions, CI/CD, Cloudflare, Vercel",
-    "Security & Testing": "JWT, RBAC, OAuth2, Jest, PyTest",
+    "Backend & APIs": "Node.js, Express.js, FastAPI, Flask, REST APIs, GraphQL, WebSockets (SignalR), Microservices",
+    "Databases": "PostgreSQL, MySQL, Redis, TimescaleDB, TypeORM, Prisma",
+    "Cloud & DevOps": "AWS (Lambda, ECS, API Gateway, S3, RDS, CloudWatch), Azure, Docker, Nginx, GitHub Actions, Cloudflare, Vercel",
+    "Security & Testing": "JWT, RBAC (role-based access control), OAuth2, Keycloak, Vitest",
     "Tools & Practices": "Git, Jira, Agile/Scrum, Data Structures & Algorithms",
 }
 
@@ -37,81 +48,77 @@ SKILL_ORDER_FRONTEND = [
 ]
 
 # --- Experience -------------------------------------------------------------
-# Wording pass done (duty-speak out, one number per bullet, verbs de-duplicated).
-# Still open: the owner's real metrics for Magpii and Comorins.
 EXPERIENCE = [
     {
         "header": "Software Engineer | Magpii Innovations | Nov 2025 – Present",
         "bullets": [
-            "Build client-facing features end to end with React.js, Node.js and Express.js, from "
-            "requirement breakdown through to release in cross-functional Agile sprints.",
-            "Design and maintain the REST APIs behind those features, including the integration "
-            "points with other systems.",
-            "Diagnose and resolve production errors across live application workflows, keeping "
-            "client-facing features stable.",
-            "Onboard new clients by translating their requirements into product configuration and "
-            "the features their setup needs.",
+            "Develop full-stack features for an Industrial IoT and Digital Twin platform and an "
+            "AI-powered Education Management Platform, delivered in Agile sprints.",
+            "Built .NET microservices with SignalR, handling 10,000+ concurrent events/sec at "
+            "sub-100 ms latency.",
+            "Built REST APIs with pagination, search and RBAC across 12+ modules of a live "
+            "education platform.",
+            "Onboard clients by turning requirements into configurations and features; "
+            "resolve live production issues.",
         ],
     },
     {
         "header": "Junior Software Developer | Comorins Technologies | Mar 2025 – Oct 2025",
         "bullets": [
-            "Built server-side-rendered web applications with Next.js and TypeScript.",
-            "Developed Node.js REST APIs and secured them with JWT authentication and role-based "
-            "access control (RBAC).",
-            "Automated manual steps in internal processes with AI-powered features and application "
-            "workflows written in Python.",
-            "Maintained the GitHub Actions and Vercel CI/CD pipelines used for application "
-            "releases.",
+            "Cut manual showing coordination and booking conflicts with client self-booking "
+            "and optimised scheduling logic.",
+            "Improved SEO and load speed with server-rendered Next.js pages for an AI-powered "
+            "real estate platform.",
+            "Improved client engagement with AI-powered follow-up automation in Python; secured "
+            "APIs with JWT/RBAC and shipped to Vercel via GitHub Actions CI/CD.",
         ],
     },
     {
         "header": "Junior Software Developer | Devaxcel Tech Pvt. Ltd. | Sep 2024 – Mar 2025",
         "bullets": [
-            "Optimised REST and GraphQL APIs, cutting API response time by 25%.",
-            "Developed React.js features in TypeScript.",
-            "Managed PostgreSQL migrations, indexing and secure queries for efficient data "
-            "retrieval.",
-            "Containerised microservices with Docker, deployed backend functions on AWS Lambda and "
-            "supported the CI/CD pipelines and system integration for releases.",
+            "Cut API response time by 25% by optimising GraphQL and REST APIs, and built React, "
+            "TypeScript and Redux Toolkit features for a live HealthTech platform.",
+            "Managed PostgreSQL migrations, indexing and TypeORM queries; deployed to AWS Lambda "
+            "via GitHub Actions.",
+            "Built and maintained order-related Node.js microservices in a 28-service backend, "
+            "scaled independently.",
         ],
     },
 ]
 
-# --- Projects ---------------------------------------------------------------
-# Owner's call: no work-vs-personal labels, keep all three. Project dates still open.
+# --- Projects (header = bold name | 5 skills, no role) ----------------------
 PROJECTS = [
     {
         "name": "Enterprise Industrial IoT & Digital Twin Platform",
-        "stack": ".NET 8/9, ASP.NET Core, React 19, Azure, Docker",
+        "stack": "React 19, .NET 8/9, ASP.NET Core, SignalR, PostgreSQL",
         "bullets": [
-            "Designed and deployed 7+ Docker microservices on Azure Container Apps for telemetry "
-            "ingestion, graph models and caching.",
-            "Streamed 50,000+ telemetry points/sec at sub-80 ms latency (SignalR WebSockets, Azure "
-            "Event Hubs); cut graph query latency 42% with Apache AGE on PostgreSQL.",
-            "Delivered a low-code React 19 + Redux Toolkit cockpit that reduced dashboard "
-            "configuration deployments by 80%; Azure DevOps GitOps pipelines with Trivy scanning "
-            "kept releases under 12 minutes.",
+            "Enabled real-time asset monitoring across plants with 7+ ASP.NET Core microservices "
+            "and a React 19 cockpit.",
+            "Cut multi-hop graph queries by 45% and sped up time-series aggregations 3x by "
+            "combining Apache AGE and TimescaleDB in one PostgreSQL data tier.",
+            "Cut client deployment time from 3 weeks to 2 days with a metadata-driven UI configured "
+            "through JSON schemas; secured with Keycloak and tested with xUnit and Vitest (85%+ coverage).",
         ],
     },
     {
-        "name": "HealthTech Platform",
-        "stack": "React.js, TypeScript, Node.js, PostgreSQL, AWS Lambda",
+        "name": "AI-Powered Education Management Platform",
+        "stack": "React, Next.js, Node.js, PostgreSQL, AWS ECS",
         "bullets": [
-            "Built order-management workflows supporting 10,000+ daily orders; automated backend "
-            "tasks with AWS Lambda.",
-            "Implemented JWT authentication and RBAC, and integrated REST and GraphQL APIs with "
-            "microservices.",
+            "Delivered features across 12+ modules for schools, colleges and universities, "
+            "keeping data consistent across timetables, assignments and quizzes with class-wise "
+            "subject integration.",
+            "Resolved API and data compatibility issues by migrating from Prisma/MySQL to raw "
+            "PostgreSQL queries.",
         ],
     },
     {
-        "name": "Learning Management System",
-        "stack": "React.js, Node.js, REST APIs",
+        "name": "HealthTech App – Digital Healthcare Platform",
+        "stack": "React, Node.js, PostgreSQL, GraphQL, AWS Lambda",
         "bullets": [
-            "Created responsive learning modules and REST APIs for course management and "
-            "dashboards.",
-            "Fixed defects and supported deployment and integration alongside QA, UI/UX and "
-            "product teams.",
+            "Processed 10,000+ daily orders on a live platform for medicine purchases and digital "
+            "prescriptions, with staged verification.",
+            "Automated order processing and delivery-readiness workflows with AWS Lambda, cutting "
+            "manual handling.",
         ],
     },
 ]
@@ -122,44 +129,40 @@ EDUCATION = (
 
 # --- Summaries --------------------------------------------------------------
 SUMMARY_MASTER = (
-    "Full Stack Software Engineer with 2+ years of experience building scalable, client-facing web "
+    "Full Stack Software Engineer with 2+ years of experience building client-facing web "
     "applications with React.js, Next.js, JavaScript, TypeScript, Node.js and Python. Cut API "
-    "response time by 25% by optimising REST and GraphQL APIs. Hands-on with JWT/RBAC "
-    "authentication, PostgreSQL indexing, Dockerised microservices on AWS and CI/CD in "
-    "cross-functional Agile teams."
+    "response time by 25% by optimising REST and GraphQL APIs. Hands-on with JWT/RBAC, "
+    "PostgreSQL, Dockerised microservices on AWS and Azure, and CI/CD in Agile teams."
 )
 SUMMARY_BACKEND = (
     "Backend Software Engineer with 2+ years of experience building scalable backend services and "
     "APIs with Node.js, Express.js, TypeScript and Python. Cut API response time by 25% by "
-    "optimising REST and GraphQL APIs. Hands-on with JWT/RBAC authentication, PostgreSQL indexing, "
-    "Dockerised microservices on AWS and CI/CD in cross-functional Agile teams."
+    "optimising REST and GraphQL APIs. Hands-on with JWT/RBAC, PostgreSQL, Dockerised "
+    "microservices on AWS and Azure, and CI/CD in Agile teams."
 )
 SUMMARY_NODE = (
     "Node.js Developer with 2+ years of experience building scalable APIs and backend services "
     "with Node.js, Express.js, JavaScript and TypeScript, plus React.js and Next.js on the front "
-    "end. Cut API response time by 25% by optimising REST and GraphQL APIs. Hands-on with JWT/RBAC "
-    "authentication, PostgreSQL indexing, Dockerised microservices on AWS and CI/CD in "
-    "cross-functional Agile teams."
+    "end. Cut API response time by 25% by optimising REST and GraphQL APIs. Hands-on with JWT/RBAC, "
+    "PostgreSQL, Dockerised microservices on AWS and Azure, and CI/CD in Agile teams."
 )
 SUMMARY_PYTHON = (
-    "Python Developer with 2+ years of experience building scalable backend services, APIs and "
-    "AI-powered automation with Python, FastAPI and Flask, alongside Node.js and TypeScript. Cut "
-    "API response time by 25% by optimising REST and GraphQL APIs. Hands-on with JWT/RBAC "
-    "authentication, PostgreSQL indexing, Dockerised microservices on AWS and CI/CD in "
-    "cross-functional Agile teams."
+    "Python Developer with 2+ years of experience building backend services, APIs and AI-powered "
+    "automation with Python, FastAPI and Flask, alongside Node.js and TypeScript. Cut API response "
+    "time by 25% by optimising REST and GraphQL APIs. Hands-on with JWT/RBAC, PostgreSQL, "
+    "Dockerised microservices on AWS and Azure, and CI/CD in Agile teams."
 )
 SUMMARY_FRONTEND = (
     "Frontend Software Engineer with 2+ years of experience building responsive, client-facing web "
     "applications with React.js, Next.js, JavaScript and TypeScript. Cut API response time by 25% "
     "by optimising REST and GraphQL APIs. Hands-on with Redux Toolkit, Tailwind CSS, server-side "
-    "rendering, JWT/RBAC authentication and CI/CD with GitHub Actions and Vercel in "
-    "cross-functional Agile teams."
+    "rendering, JWT/RBAC and CI/CD with GitHub Actions and Vercel in Agile teams."
 )
 SUMMARY_REACT = (
-    "React Developer with 2+ years of experience building responsive, scalable, client-facing web "
+    "React Developer with 2+ years of experience building responsive, client-facing web "
     "applications with React.js, Next.js, JavaScript and TypeScript. Cut API response time by 25% "
-    "by optimising REST and GraphQL APIs. Hands-on with Redux Toolkit, Tailwind CSS, Node.js APIs, "
-    "JWT/RBAC authentication and CI/CD in cross-functional Agile teams."
+    "by optimising REST and GraphQL APIs. Hands-on with Redux Toolkit, Tailwind CSS, Node.js "
+    "APIs, JWT/RBAC and CI/CD in Agile teams."
 )
 
 # --- Role versions: only title line, summary and skills order change --------
